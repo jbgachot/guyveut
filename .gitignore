@@ -1,0 +1,11 @@
+# package directories
+node_modules
+yarn-error.log
+/*.env
+
+# Serverless directories
+.serverless
+.config.*
+
+# Mac related
+.DS_Store

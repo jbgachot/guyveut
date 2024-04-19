@@ -1,0 +1,20 @@
+{
+  "name": "banker",
+  "version": "0.1.0",
+  "description": "Banking handler for the guyveut bot",
+  "author": "jbgachot",
+  "license": "ISC",
+  "main": "handler.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy:prod": "serverless deploy --stage prod",
+    "deploy:all": "yarn run deploy && yarn run deploy:prod",
+    "delete": "serverless remove",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@guyveut/shared": "^0.1.0",
+    "@slack/web-api": "^5.9.0",
+    "jest": "^26.0.1"
+  }
+}

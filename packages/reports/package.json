@@ -1,0 +1,21 @@
+{
+  "name": "reports",
+  "version": "0.1.0",
+  "description": "Interactive app to get reports for the guyveut bot",
+  "author": "jbgachot",
+  "license": "ISC",
+  "main": "handler.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy:prod": "serverless deploy --stage prod",
+    "deploy:all": "yarn run deploy && yarn run deploy:prod",
+    "delete": "serverless remove",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@guyveut/shared": "^0.1.0",
+    "@slack/events-api": "^2.3.3",
+    "@slack/interactive-messages": "^1.6.0",
+    "@slack/web-api": "^5.10.0"
+  }
+}
