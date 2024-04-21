@@ -1,0 +1,25 @@
+#  ██████   █████  ███████ ██   ██ ██      ██    ██
+#  ██   ██ ██   ██ ██      ██   ██ ██       ██  ██
+#  ██████  ███████ ███████ ███████ ██        ████
+#  ██   ██ ██   ██      ██ ██   ██ ██         ██
+#  ██████  ██   ██ ███████ ██   ██ ███████    ██
+#
+# Require:
+#   Bash > 4
+#   Ruby
+# Then:
+#   `gem install bashly`
+#   `bashly add settings`
+#   `bashly add colors`
+#   `bashly generate`
+
+source_dir: .
+
+target_dir: ..
+
+usage_colors:
+  caption: bold
+  command: green
+  arg: blue
+  flag: magenta
+  environment_variable: cyan

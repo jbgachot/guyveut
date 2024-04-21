@@ -1,0 +1,32 @@
+name: install
+help: Helpers to setup Guy Veut
+version: 0.1.0
+
+commands:
+  - name: slack
+    alias: s
+    help: Slack app configuration
+    dependencies:
+      - jq
+      - curl
+    commands:
+      - name: update
+        alias: u
+        help: Update the Slack application
+        environment_variables:
+          - name: SLACK_APP_CONF_TOKEN
+            help: Slack "app configuration token" - should be generated here > https://api.slack.com/reference/manifests#config-tokens
+            required: true
+        flags:
+          - long: --app-id
+            short: -i
+            arg: app-id
+            required: true
+            help: Your Slack app id
+          - long: --manifest
+            short: -m
+            arg: manifest
+            default: 'slack.json'
+            help: Path to the Slack manifest
+        examples:
+          - ./install slack create --app-id A01... --manifest ./folder/slack.json
