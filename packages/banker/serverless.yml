@@ -81,6 +81,7 @@ functions:
 # Auto rotation
 plugins:
   - serverless-prune-plugin
+  - serverless-offline
 custom:
   prune:
     automatic: true

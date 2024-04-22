@@ -2,10 +2,11 @@
   "name": "reports",
   "version": "0.1.0",
   "description": "Interactive app to get reports for the guyveut bot",
-  "author": "jbgachot",
-  "license": "ISC",
+  "author": "Jean-Brice Gachot",
+  "license": "MIT",
   "main": "handler.js",
   "scripts": {
+    "local": "serverless offline",
     "deploy": "serverless deploy",
     "deploy:prod": "serverless deploy --stage prod",
     "deploy:all": "yarn run deploy && yarn run deploy:prod",
@@ -17,5 +18,8 @@
     "@slack/events-api": "^2.3.3",
     "@slack/interactive-messages": "^1.6.0",
     "@slack/web-api": "^5.10.0"
+  },
+  "devDependencies": {
+    "serverless-offline": "^13.3.4"
   }
 }
