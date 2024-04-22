@@ -177,6 +177,11 @@ install_slack_update_usage() {
     printf "    Default: slack.json\n"
     echo
 
+    # :flag.usage
+    printf "  %s\n" "$(magenta "--target, -t TARGET")"
+    printf "    A domain to make slack point to (useful for local development)\n"
+    echo
+
     # :command.usage_fixed_flags
     printf "  %s\n" "$(magenta "--help, -h")"
     printf "    Show this help\n"
@@ -328,10 +333,15 @@ install_slack_update_command() {
   echo -e "Updating the Slack App..."
 
   JSON_MANIFEST=$(jq --arg APP_ID ${args[--app-id]} '{"app_id": $APP_ID, "manifest": .}' ${args[--manifest]} | jq -c .)
-  BANKER_ENDPOINT=$(cd packages/banker && serverless info --verbose | grep ServiceEndpoint | sed s/ServiceEndpoint\:\ //g)
+  if [ -z ${args[--target]} ]; then
+      BANKER_ENDPOINT=$(cd packages/banker && serverless info --verbose | grep ServiceEndpoint | sed s/ServiceEndpoint\:\ //g)
+      REPORTS_ENDPOINT=$(cd packages/reports && serverless info --verbose | grep ServiceEndpoint | sed s/ServiceEndpoint\:\ //g)
+  else
+      BANKER_ENDPOINT=${args[--target]}
+      REPORTS_ENDPOINT=${args[--target]}
+  fi
   JSON_MANIFEST="${JSON_MANIFEST//<<BANKER_ENDPOINT>>/"$BANKER_ENDPOINT"}"
 
-REPORTS_ENDPOINT=$(cd packages/reports && serverless info --verbose | grep ServiceEndpoint | sed s/ServiceEndpoint\:\ //g)
 JSON_MANIFEST="${JSON_MANIFEST//<<REPORTS_ENDPOINT>>/"$REPORTS_ENDPOINT"}"
 
 curl -X POST -H "Content-Type: application/json; charset=utf-8" \
@@ -633,6 +643,20 @@ install_slack_update_parse_requirements() {
           shift
         else
           printf "%s\n" "--manifest requires an argument: --manifest, -m MANIFEST" >&2
+          exit 1
+        fi
+        ;;
+
+      # :flag.case
+      --target | -t)
+
+        # :flag.case_arg
+        if [[ -n ${2+x} ]]; then
+          args['--target']="$2"
+          shift
+          shift
+        else
+          printf "%s\n" "--target requires an argument: --target, -t TARGET" >&2
           exit 1
         fi
         ;;

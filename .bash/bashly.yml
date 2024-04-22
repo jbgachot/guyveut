@@ -44,5 +44,9 @@ commands:
             arg: manifest
             default: 'slack.json'
             help: Path to the Slack manifest
+          - long: --target
+            short: -t
+            arg: target
+            help: A domain to make slack point to (useful for local development)
         examples:
           - ./install slack update --app-id A01... --manifest ./folder/slack.json
