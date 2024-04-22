@@ -73,6 +73,7 @@ install_slack_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "$(bold "Commands:")"
+  printf "  %s   Create the Slack application (run it only once)\n" "$(green "create")"
   printf "  %s   Update the Slack application\n" "$(green "update")"
   echo
 
@@ -83,6 +84,58 @@ install_slack_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "$(magenta "--help, -h")"
     printf "    Show this help\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+install_slack_create_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "install slack create - Create the Slack application (run it only once)\n"
+    echo
+
+  else
+    printf "install slack create - Create the Slack application (run it only once)\n"
+    echo
+
+  fi
+
+  printf "Alias: c\n"
+  echo
+
+  printf "%s\n" "$(bold "Usage:")"
+  printf "  install slack create [OPTIONS]\n"
+  printf "  install slack create --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "$(bold "Options:")"
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "$(magenta "--manifest, -m MANIFEST")"
+    printf "    Path to the Slack manifest\n"
+    printf "    Default: slack.json\n"
+    echo
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "$(magenta "--help, -h")"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_environment_variables
+    printf "%s\n" "$(bold "Environment Variables:")"
+
+    # :environment_variable.usage
+    printf "  %s\n" "$(cyan "SLACK_APP_CONF_TOKEN (required)")"
+    printf "    Slack \"app configuration token\" - should be generated here >\n    https://api.slack.com/reference/manifests#config-tokens\n"
+    echo
+
+    # :command.usage_examples
+    printf "%s\n" "$(bold "Examples:")"
+    printf "  ./install slack create --manifest ./folder/slack.json\n"
     echo
 
   fi
@@ -139,7 +192,7 @@ install_slack_update_usage() {
 
     # :command.usage_examples
     printf "%s\n" "$(bold "Examples:")"
-    printf "  ./install slack create --app-id A01... --manifest ./folder/slack.json\n"
+    printf "  ./install slack update --app-id A01... --manifest ./folder/slack.json\n"
     echo
 
   fi
@@ -253,15 +306,37 @@ cyan_underlined() { print_in_color "\e[4;36m" "$*"; }
 # :command.command_functions
 
 # :command.function
+install_slack_create_command() {
+  # ./slack_create_command.sh
+  echo -e "Creating the Slack App..."
+
+  JSON_MANIFEST=$(jq '{"manifest": .}' ${args[--manifest]} | jq -c .)
+  JSON_MANIFEST="${JSON_MANIFEST//<<BANKER_ENDPOINT>>/'https://'"$(uuidgen)"'.fake'}"
+
+REPORTS_ENDPOINT=$(cd packages/reports && serverless info --verbose | grep ServiceEndpoint | sed s/ServiceEndpoint\:\ //g)
+JSON_MANIFEST="${JSON_MANIFEST//<<REPORTS_ENDPOINT>>/'https://'"$(uuidgen)"'.fake'}"
+
+curl -X POST -H "Content-Type: application/json; charset=utf-8" \
+    -H "Authorization: Bearer $SLACK_APP_CONF_TOKEN" \
+    --data "${JSON_MANIFEST//[[:blank:]]/}" https://slack.com/api/apps.manifest.create
+
+}
+
+# :command.function
 install_slack_update_command() {
   # ./slack_update_command.sh
   echo -e "Updating the Slack App..."
 
   JSON_MANIFEST=$(jq --arg APP_ID ${args[--app-id]} '{"app_id": $APP_ID, "manifest": .}' ${args[--manifest]} | jq -c .)
+  BANKER_ENDPOINT=$(cd packages/banker && serverless info --verbose | grep ServiceEndpoint | sed s/ServiceEndpoint\:\ //g)
+  JSON_MANIFEST="${JSON_MANIFEST//<<BANKER_ENDPOINT>>/"$BANKER_ENDPOINT"}"
 
-  curl -X POST -H "Content-Type: application/json; charset=utf-8" \
-      -H "Authorization: Bearer $SLACK_APP_CONF_TOKEN" \
-      --data "${JSON_MANIFEST}" https://slack.com/api/apps.manifest.update
+REPORTS_ENDPOINT=$(cd packages/reports && serverless info --verbose | grep ServiceEndpoint | sed s/ServiceEndpoint\:\ //g)
+JSON_MANIFEST="${JSON_MANIFEST//<<REPORTS_ENDPOINT>>/"$REPORTS_ENDPOINT"}"
+
+curl -X POST -H "Content-Type: application/json; charset=utf-8" \
+    -H "Authorization: Bearer $SLACK_APP_CONF_TOKEN" \
+    --data "${JSON_MANIFEST//[[:blank:]]/}" https://slack.com/api/apps.manifest.update
 
 }
 
@@ -370,11 +445,25 @@ install_slack_parse_requirements() {
     exit 1
   fi
 
+  if command -v serverless >/dev/null 2>&1; then
+    deps['serverless']="$(command -v serverless | head -n1)"
+  else
+    printf "missing dependency: serverless\n" >&2
+    exit 1
+  fi
+
   # :command.command_filter
   action=${1:-}
 
   case $action in
     -*) ;;
+
+    create | c)
+      action="create"
+      shift
+      install_slack_create_parse_requirements "$@"
+      shift $#
+      ;;
 
     update | u)
       action="update"
@@ -416,6 +505,74 @@ install_slack_parse_requirements() {
 
     esac
   done
+
+}
+
+# :command.parse_requirements
+install_slack_create_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        install_slack_create_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.environment_variables_filter
+
+  env_var_names+=("SLACK_APP_CONF_TOKEN")
+  if [[ -z "${SLACK_APP_CONF_TOKEN:-}" ]]; then
+    printf "missing required environment variable: SLACK_APP_CONF_TOKEN\n" >&2
+    exit 1
+  fi
+
+  # :command.command_filter
+  action="slack create"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --manifest | -m)
+
+        # :flag.case_arg
+        if [[ -n ${2+x} ]]; then
+          args['--manifest']="$2"
+          shift
+          shift
+        else
+          printf "%s\n" "--manifest requires an argument: --manifest, -m MANIFEST" >&2
+          exit 1
+        fi
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+  # :command.default_assignments
+  [[ -n ${args['--manifest']:-} ]] || args['--manifest']="slack.json"
 
 }
 
@@ -527,6 +684,7 @@ run() {
 
   case "$action" in
     "slack") install_slack_command ;;
+    "slack create") install_slack_create_command ;;
     "slack update") install_slack_update_command ;;
   esac
 }

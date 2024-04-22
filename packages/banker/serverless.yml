@@ -1,23 +1,59 @@
+frameworkVersion: '3'
 service: banker
+
+resources:
+  Resources:
+    TransactionsLogTable:
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: user
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: N
+        KeySchema:
+          - AttributeName: user
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: 'transactions_log'
+      Type: AWS::DynamoDB::Table
+  Outputs:
+    TransactionsLogTable:
+      Description: Table for rewarding logs.
+      Value:
+        Ref: TransactionsLogTable
+    TransactionsLogTableArn:
+      Description: The ARN of the table.
+      Value: { 'Fn::GetAtt': ['TransactionsLogTable', 'Arn'] }
+      Export:
+        Name: TransactionsLogTableArn
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs18.x
   region: eu-west-3
   stage: ${opt:stage, 'dev'}
   timeout: 10
   apiGateway:
     shouldStartNameWithService: true
-  iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-       - dynamodb:Query
-       - dynamodb:Scan
-       - dynamodb:GetItem
-       - dynamodb:PutItem
-       - dynamodb:UpdateItem
-       - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:eu-west-3:847237136387:table/transactions_log"
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            Fn::GetAtt:
+              - TransactionsLogTable
+              - Arn
 
 functions:
   message:
@@ -28,7 +64,7 @@ functions:
           method: post
           cors: true
     environment:
-      LOG_TABLE_NAME: ${file(../../.config.${self:provider.stage}.yml):LOG_TABLE_NAME}
+      LOG_TABLE_NAME: transactions_log
       MAX_POINT_PER_DAY: ${file(../../.config.${self:provider.stage}.yml):MAX_POINT_PER_DAY}
       REACT_SYMBOL: ${file(../../.config.${self:provider.stage}.yml):REACT_SYMBOL}
       REACT_NEGATIVE_SYMBOL: ${file(../../.config.${self:provider.stage}.yml):REACT_NEGATIVE_SYMBOL}

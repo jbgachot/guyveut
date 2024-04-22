@@ -9,7 +9,23 @@ commands:
     dependencies:
       - jq
       - curl
+      - serverless
     commands:
+      - name: create
+        alias: c
+        help: Create the Slack application (run it only once)
+        environment_variables:
+          - name: SLACK_APP_CONF_TOKEN
+            help: Slack "app configuration token" - should be generated here > https://api.slack.com/reference/manifests#config-tokens
+            required: true
+        flags:
+          - long: --manifest
+            short: -m
+            arg: manifest
+            default: 'slack.json'
+            help: Path to the Slack manifest
+        examples:
+          - ./install slack create --manifest ./folder/slack.json
       - name: update
         alias: u
         help: Update the Slack application
@@ -29,4 +45,4 @@ commands:
             default: 'slack.json'
             help: Path to the Slack manifest
         examples:
-          - ./install slack create --app-id A01... --manifest ./folder/slack.json
+          - ./install slack update --app-id A01... --manifest ./folder/slack.json

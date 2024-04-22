@@ -6,7 +6,7 @@
   "main": "bot.js",
   "scripts": {
     "lint": "eslint --ignore-path .gitignore .",
-    "deploy": "lerna run deploy --stream",
+    "deploy": "lerna run deploy --stream --scope banker && lerna run deploy --stream --scope reports",
     "deploy:prod": "lerna run deploy:prod --stream",
     "delete:all": "lerna run delete --stream",
     "test:watch": "jest --watch",
@@ -23,7 +23,7 @@
     ]
   },
   "dependencies": {
-    "serverless-prune-plugin": "^1.4.3"
+    "serverless-prune-plugin": "^2.0.2"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
