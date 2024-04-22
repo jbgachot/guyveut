@@ -41,7 +41,14 @@ const projectionExpression = (attributes) => {
 const getId = () => 'a' + uuidv4().split('-').join('');
 
 const getModule = (config) => {
-  const documentClient = new AWS.DynamoDB.DocumentClient(config);
+  const OFFLINE_OPTIONS = {
+    region: 'localhost',
+    endpoint: 'http://0.0.0.0:8000',
+    accessKeyId: 'MockAccessKeyId',
+    secretAccessKey: 'MockSecretAccessKey',
+  };
+  console.log(process.env.IS_OFFLINE)
+  const documentClient = new AWS.DynamoDB.DocumentClient(process.env.IS_OFFLINE ? OFFLINE_OPTIONS : config);
 
   const paginationAware = (method) => async (params) => {
     const getItems = async (items, lastEvaluatedKey, firstTime = false) => {

@@ -81,9 +81,21 @@ functions:
 # Auto rotation
 plugins:
   - serverless-prune-plugin
+  - serverless-dynamodb
   - serverless-offline
 custom:
   prune:
     automatic: true
     includeLayers: true
     number: 3
+  serverless-offline:
+    httpPort: 3000
+    lambdaPort: 3002
+  dynamodb:
+    stages:
+      - dev
+    start:
+      docker: true
+      port: 8000
+      inMemory: true
+      migrate: true

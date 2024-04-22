@@ -1,0 +1,17 @@
+{
+	auto_https off
+}
+
+http://localhost:2000 {
+	handle /dev/api/reports* {
+		reverse_proxy localhost:4000
+	}
+
+	handle /dev/api/action* {
+		reverse_proxy localhost:4000
+	}
+
+	handle /dev/api/message* {
+		reverse_proxy localhost:3000
+	}
+}

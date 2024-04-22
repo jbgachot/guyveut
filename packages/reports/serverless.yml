@@ -71,3 +71,6 @@ custom:
     automatic: true
     includeLayers: true
     number: 3
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4002

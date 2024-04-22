@@ -5,6 +5,7 @@
   "description": "",
   "main": "bot.js",
   "scripts": {
+    "local": "lerna run local --stream",
     "lint": "eslint --ignore-path .gitignore .",
     "deploy": "lerna run deploy --stream --scope banker && lerna run deploy --stream --scope reports",
     "deploy:prod": "lerna run deploy:prod --stream",

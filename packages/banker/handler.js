@@ -21,7 +21,7 @@ const notifyViaEmoji = require('./utils/notifyViaEmoji');
 const sendMessage = require('./utils/sendMessage');
 
 module.exports.message = async (event) => {
-  if (!signature.isVerified(event))
+  if (process.env.IS_OFFLINE ? false : !signature.isVerified(event))
     return apiResult(404, { error: 'Wrong signature' });
 
   const body = JSON.parse(event.body);
