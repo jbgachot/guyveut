@@ -47,8 +47,10 @@ const getModule = (config) => {
     accessKeyId: 'MockAccessKeyId',
     secretAccessKey: 'MockSecretAccessKey',
   };
-  console.log(process.env.IS_OFFLINE)
-  const documentClient = new AWS.DynamoDB.DocumentClient(process.env.IS_OFFLINE ? OFFLINE_OPTIONS : config);
+  console.log(process.env.IS_OFFLINE);
+  const documentClient = new AWS.DynamoDB.DocumentClient(
+    process.env.IS_OFFLINE ? OFFLINE_OPTIONS : config
+  );
 
   const paginationAware = (method) => async (params) => {
     const getItems = async (items, lastEvaluatedKey, firstTime = false) => {
